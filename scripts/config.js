@@ -3,17 +3,15 @@
 // =====================================================
 
 export const CONFIG = {
-  // Canvas dimensions (viewport; the world is wider — see WORLD_W)
+  // Canvas dimensions (viewport; the world is much wider — see WORLD_W)
   CANVAS_W: 1280,
   CANVAS_H: 720,
 
-  // World width — the playable area extends beyond the viewport
-  // so the camera scrolls right as the duck flies. Max camera
-  // offset is WORLD_W - CANVAS_W.
-  WORLD_W: 1800,
+  // World width — most of the multiplier strip starts past the viewport,
+  // so the camera has to scroll to reveal what's out there.
+  WORLD_W: 2400,
 
   // How aggressively the camera follows the duck (0 = locked, 1 = snap).
-  // 0.12 gives a smooth, slightly-lagging follow.
   CAMERA_LERP: 0.12,
 
   // Physics
@@ -27,36 +25,44 @@ export const CONFIG = {
   // Where the ground line lives (zones sit on this y)
   GROUND_Y: 600,
 
-  // Multiplier zones — left to right from the cannon
-  // Tuned for ~8-15% house edge: bust pits are wider than wins,
-  // partial-loss zones flank the better multipliers,
-  // and the 100x lives in the sky (Golden Ring).
+  // Multiplier zones — left to right from the cannon.
+  // Roughly half (zones starting at x >= 1280) live off-screen at the start
+  // of the round and only come into view as the camera follows the duck.
   ZONES: [
-    { start: 165,  end: 240,  mult: 0,    label: 'BUST',    color: '#3a1d2e' },
-    { start: 240,  end: 290,  mult: 1.5,  label: '1.5x',    color: '#5b4a8a' },
-    { start: 290,  end: 380,  mult: 0.5,  label: '0.5x',    color: '#6b3055' },
-    { start: 380,  end: 435,  mult: 2,    label: '2x',      color: '#6f5cb0' },
-    { start: 435,  end: 560,  mult: 0,    label: 'BUST',    color: '#3a1d2e' },
-    { start: 560,  end: 660,  mult: 0.75, label: '0.75x',   color: '#7a4072' },
-    { start: 660,  end: 715,  mult: 3,    label: '3x',      color: '#7d3fc6' },
-    { start: 715,  end: 840,  mult: 0,    label: 'BUST',    color: '#3a1d2e' },
-    { start: 840,  end: 885,  mult: 5,    label: '5x',      color: '#a8278d' },
-    { start: 885,  end: 1000, mult: 0.5,  label: '0.5x',    color: '#6b3055' },
-    { start: 1000, end: 1050, mult: 10,   label: '10x',     color: '#d72b78' },
-    { start: 1050, end: 1500, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
-    { start: 1500, end: 1800, mult: 0,    label: 'VOID',    color: '#1a0a1f' }
+    // ----- ON-SCREEN (cannon area, x < 1280) -----
+    { start: 165,  end: 220,  mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 220,  end: 310,  mult: 1.5,  label: '1.5x',    color: '#5b4a8a' },
+    { start: 310,  end: 440,  mult: 0.5,  label: '0.5x',    color: '#6b3055' },
+    { start: 440,  end: 505,  mult: 2,    label: '2x',      color: '#6f5cb0' },
+    { start: 505,  end: 720,  mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 720,  end: 820,  mult: 0.75, label: '0.75x',   color: '#7a4072' },
+    { start: 820,  end: 870,  mult: 3,    label: '3x',      color: '#7d3fc6' },
+    { start: 870,  end: 1100, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 1100, end: 1130, mult: 5,    label: '5x',      color: '#a8278d' },
+    { start: 1130, end: 1280, mult: 0.5,  label: '0.5x',    color: '#6b3055' },
+
+    // ----- OFF-SCREEN at round start (x >= 1280) -----
+    { start: 1280, end: 1400, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 1400, end: 1500, mult: 0.75, label: '0.75x',   color: '#7a4072' },
+    { start: 1500, end: 1600, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 1600, end: 1635, mult: 10,   label: '10x',     color: '#d72b78' },
+    { start: 1635, end: 1850, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 1850, end: 1895, mult: 3,    label: '3x',      color: '#7d3fc6' },
+    { start: 1895, end: 2050, mult: 0.5,  label: '0.5x',    color: '#6b3055' },
+    { start: 2050, end: 2150, mult: 0,    label: 'BUST',    color: '#3a1d2e' },
+    { start: 2150, end: 2230, mult: 1.5,  label: '1.5x',    color: '#5b4a8a' },
+    { start: 2230, end: 2400, mult: 0,    label: 'VOID',    color: '#1a0a1f' }
   ],
 
-  // Airborne targets — duck flying THROUGH these awards a bonus multiplier
-  // The Golden Ring is the new jackpot (replaces the old 100x ground tile).
-  // The Star is a smaller consolation jackpot mid-arc.
+  // Airborne targets — Star is mid-air over the on-screen zone, Ring sits
+  // high and deep, threadable only by powerful well-angled shots.
   AIR_TARGETS: [
     {
       id: 'ring',
       type: 'ring',
-      x: 1380, y: 270,
-      radius: 30,
-      innerRadius: 18,
+      x: 2080, y: 110,
+      radius: 13,
+      innerRadius: 7,
       mult: 100,
       label: 'GOLDEN RING',
       color: '#ffd33d'
@@ -64,20 +70,29 @@ export const CONFIG = {
     {
       id: 'star',
       type: 'star',
-      x: 720, y: 220,
-      radius: 22,
+      x: 950, y: 195,
+      radius: 14,
       mult: 5,
       label: 'STAR BONUS',
       color: '#00e5ff'
     }
   ],
 
-  // Air obstacles — interact with the duck mid-flight
+  // Air obstacles — spread along the trajectory so a high shot has to
+  // contend with one of them.
   OBSTACLES: [
+    {
+      id: 'cloud',
+      type: 'cloud',
+      x: 420, y: 290,
+      w: 130, h: 56,
+      label: 'STORM',
+      color: '#7a4fb0'
+    },
     {
       id: 'spike',
       type: 'spike',
-      x: 540, y: 410,
+      x: 700, y: 410,
       radius: 24,
       label: 'SPIKES',
       color: '#ff4d6d'
@@ -85,18 +100,37 @@ export const CONFIG = {
     {
       id: 'bumper',
       type: 'bumper',
-      x: 880, y: 320,
+      x: 1180, y: 320,
       radius: 28,
       label: 'BUMPER',
       color: '#00e5ff'
     },
     {
-      id: 'cloud',
-      type: 'cloud',
-      x: 380, y: 290,
-      w: 130, h: 56,
-      label: 'STORM',
-      color: '#7a4fb0'
+      id: 'spike2',
+      type: 'spike',
+      x: 1740, y: 380,
+      radius: 24,
+      label: 'SPIKES',
+      color: '#ff4d6d'
+    },
+    // Lucky bounce pads — send the duck forward + up. Placed low so only
+    // shallow trajectories trigger them; if you're lucky enough to clip one
+    // you might reach the far zones (or even the Golden Ring).
+    {
+      id: 'boost1',
+      type: 'boost',
+      x: 1300, y: 480,
+      radius: 24,
+      label: 'BOUNCE',
+      color: '#5af0a0'
+    },
+    {
+      id: 'boost2',
+      type: 'boost',
+      x: 1880, y: 470,
+      radius: 24,
+      label: 'BOUNCE',
+      color: '#5af0a0'
     }
   ],
 
@@ -107,8 +141,10 @@ export const CONFIG = {
 
   // Power meter oscillation
   POWER_SPEED: 0.024,
-  POWER_MIN_VEL: 8,
-  POWER_MAX_VEL: 23,
+  // Power range bumped up so even low power lands in a useful zone and full
+  // power can reach the deep off-screen zones and the Golden Ring.
+  POWER_MIN_VEL: 14,
+  POWER_MAX_VEL: 33,
 
   // Cannon muzzle distance from pivot (where the duck spawns)
   MUZZLE_DIST: 78

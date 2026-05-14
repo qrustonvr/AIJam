@@ -279,6 +279,7 @@ function drawObstacles(ctx, state) {
     const hit = state.projectile && state.projectile.obstacleHits && state.projectile.obstacleHits.has(o.id);
     if (o.type === 'spike') drawSpikes(ctx, o, t, hit);
     else if (o.type === 'bumper') drawBumper(ctx, o, t, hit);
+    else if (o.type === 'boost') drawBoost(ctx, o, t, hit);
     else if (o.type === 'cloud') drawStormCloud(ctx, o, t, hit);
   }
 }
@@ -316,6 +317,49 @@ function drawSpikes(ctx, o, t, hit) {
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(0, 0, o.radius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawBoost(ctx, o, t, hit) {
+  // Spring-loaded green disc with up-arrow chevrons. Hint that hitting this
+  // sends the duck forward and up.
+  ctx.save();
+  ctx.translate(o.x, o.y);
+
+  // Outer green glow
+  const glow = ctx.createRadialGradient(0, 0, o.radius * 0.4, 0, 0, o.radius + 14);
+  glow.addColorStop(0, 'rgba(90, 240, 160, 0.55)');
+  glow.addColorStop(1, 'rgba(90, 240, 160, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius + 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body — green sphere
+  const bodyGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, o.radius);
+  bodyGrad.addColorStop(0, hit ? '#ffffff' : '#c8ffd9');
+  bodyGrad.addColorStop(0.6, '#5af0a0');
+  bodyGrad.addColorStop(1, '#1e6a3e');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Two up-arrow chevrons that bob up and down
+  const bob = Math.sin(t * 2) * 3;
+  ctx.strokeStyle = hit ? '#ffffff' : '#0d3a22';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (let i = 0; i < 2; i++) {
+    const yOff = (i * 7) - 4 + bob;
+    ctx.beginPath();
+    ctx.moveTo(-7, yOff + 4);
+    ctx.lineTo(0, yOff - 3);
+    ctx.lineTo(7, yOff + 4);
     ctx.stroke();
   }
 

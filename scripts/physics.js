@@ -83,6 +83,17 @@ export function stepProjectile(p, dt = 1) {
           // Nudge duck just outside the bumper so we don't keep colliding
           p.x = o.x + nx * (r + 1);
           p.y = o.y + ny * (r + 1);
+        } else if (o.type === 'boost') {
+          // Lucky bounce — fling the duck forward and upward. Adds horizontal
+          // speed and ensures upward velocity. Cap to avoid runaway.
+          p.vx = Math.min(p.vx + 6, 28);
+          p.vy = Math.min(p.vy - 5, -4);
+          // Push duck out of the boost pad so it doesn't retrigger
+          const len = Math.sqrt(dx * dx + dy * dy) || 1;
+          const nx = dx / len;
+          const ny = dy / len;
+          p.x = o.x + nx * (r + 1);
+          p.y = o.y + ny * (r + 1);
         }
         p.obstacleHits.add(o.id);
       }
