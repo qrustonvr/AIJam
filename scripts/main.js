@@ -8,7 +8,8 @@ import { renderFrame } from './render.js';
 import { bindInput } from './input.js';
 import {
   createProjectile, stepProjectile, checkLanding,
-  getZoneAt, getBestAirHit, randomWind
+  getZoneAt, getBestAirHit, randomWind,
+  generateObstacles, generateAirTargets
 } from './physics.js';
 import {
   updateBalance, updateBetDisplay, updateAngleDisplay,
@@ -42,7 +43,9 @@ const state = {
   airHit: null,
   cameraX: 0,
   cameraTargetX: 0,
-  autoBet: false
+  autoBet: false,
+  obstacles: [],
+  airTargets: []
 };
 
 // ----- Auto-bet timer -----
@@ -117,6 +120,8 @@ function newRound() {
   state.powerMeterPos = 0;
   state.powerMeterDir = 1;
   state.wind = randomWind();
+  state.obstacles = generateObstacles();
+  state.airTargets = generateAirTargets();
   resetCamera();
 
   if (state.balance < CONFIG.MIN_BET) {
@@ -153,7 +158,7 @@ function fire() {
   const sx = CONFIG.CANNON_BASE_X + Math.cos(rad) * CONFIG.MUZZLE_DIST;
   const sy = CONFIG.CANNON_BASE_Y - Math.sin(rad) * CONFIG.MUZZLE_DIST;
 
-  state.projectile = createProjectile(sx, sy, state.angle, state.lockedPower, state.wind);
+  state.projectile = createProjectile(sx, sy, state.angle, state.lockedPower, state.wind, state.obstacles, state.airTargets);
   state.phase = 'FIRING';
   showPhase('firing');
   play('fire');

@@ -180,7 +180,7 @@ function drawZones(ctx) {
 
 function drawAirTargets(ctx, state) {
   const t = Date.now() * 0.003;
-  for (const target of CONFIG.AIR_TARGETS) {
+  for (const target of (state.airTargets || [])) {
     const hit = state.projectile && state.projectile.airHits && state.projectile.airHits.has(target.id);
     if (target.type === 'ring') {
       drawRing(ctx, target, t, hit);
@@ -275,7 +275,7 @@ function drawStarShape(ctx, x, y, r, color, t) {
 
 function drawObstacles(ctx, state) {
   const t = Date.now() * 0.004;
-  for (const o of CONFIG.OBSTACLES) {
+  for (const o of (state.obstacles || [])) {
     const hit = state.projectile && state.projectile.obstacleHits && state.projectile.obstacleHits.has(o.id);
     if (o.type === 'spike') drawSpikes(ctx, o, t, hit);
     else if (o.type === 'bumper') drawBumper(ctx, o, t, hit);
