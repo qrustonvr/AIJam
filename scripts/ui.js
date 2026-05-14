@@ -31,7 +31,7 @@ export function updatePowerNeedle(state) {
 export function updateWindIndicator(state) {
   const arrow = $('wind-arrow');
   const value = $('wind-value');
-  const normalized = state.wind / CONFIG.WIND_MAX; // -1 to 1
+  const normalized = state.wind / CONFIG.WIND_MAX;
   const strength = Math.round(Math.abs(normalized) * 5);
 
   if (normalized > 0.1) arrow.textContent = '→';
@@ -50,12 +50,23 @@ export function showPhase(name) {
 }
 
 export function showResult(state) {
-  const zoneText = state.zoneHit ? state.zoneHit.label : 'OUT';
-  $('result-zone').textContent = `Landed: ${zoneText}`;
+  // The air target supersedes the ground zone when paying out.
+  let zoneText;
+  if (state.airHit) {
+    zoneText = `THREADED THE ${state.airHit.label}!`;
+  } else {
+    zoneText = `Landed: ${state.zoneHit ? state.zoneHit.label : 'OUT'}`;
+  }
+  $('result-zone').textContent = zoneText;
+
   const payoutEl = $('result-payout');
-  if (state.payout > 0) {
+  if (state.payout > state.bet) {
     payoutEl.textContent = `+${state.payout.toLocaleString()}`;
     payoutEl.className = 'result-payout win';
+  } else if (state.payout > 0) {
+    const net = state.payout - state.bet;
+    payoutEl.textContent = `+${state.payout.toLocaleString()} (net ${net})`;
+    payoutEl.className = 'result-payout loss';
   } else {
     payoutEl.textContent = `−0 (bet lost)`;
     payoutEl.className = 'result-payout loss';
@@ -65,8 +76,15 @@ export function showResult(state) {
 export function showBigWin(state) {
   const banner = $('result-banner');
   if (!banner) return;
-  if (state.zoneHit && state.zoneHit.mult >= 10) {
-    $('result-title').textContent = state.zoneHit.mult >= 100 ? 'JACKPOT!' : 'BIG WIN!';
+  const effectiveMult = state.airHit ? state.airHit.mult : (state.zoneHit ? state.zoneHit.mult : 0);
+  if (effectiveMult >= 5) {
+    if (state.airHit && state.airHit.mult >= 100) {
+      $('result-title').textContent = 'JACKPOT!';
+    } else if (effectiveMult >= 10) {
+      $('result-title').textContent = 'BIG WIN!';
+    } else {
+      $('result-title').textContent = 'NICE SHOT!';
+    }
     $('result-subtitle').textContent = `+${state.payout.toLocaleString()} CHIPS`;
     banner.hidden = false;
     setTimeout(() => { banner.hidden = true; }, 2400);

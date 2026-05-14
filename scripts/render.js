@@ -1,6 +1,6 @@
 // =====================================================
 // Canvas rendering — sky, terrain, zones, cannon, ducky
-// All placeholder geometry; swap in AI sprites in hour 4.
+// Camera follows the duck during flight (state.cameraX).
 // =====================================================
 
 import { CONFIG } from './config.js';
@@ -8,12 +8,21 @@ import { CONFIG } from './config.js';
 export function renderFrame(ctx, state) {
   ctx.clearRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
 
+  // Background (no camera offset — sky is "infinite")
   drawSky(ctx);
   drawStars(ctx, state);
+
+  // Everything from here on lives in world-space and is shifted by camera.
+  const cam = state.cameraX || 0;
+  ctx.save();
+  ctx.translate(-cam, 0);
+
   drawSkyline(ctx);
   drawWindStreaks(ctx, state);
   drawGround(ctx);
   drawZones(ctx);
+  drawObstacles(ctx, state);
+  drawAirTargets(ctx, state);
   drawCannon(ctx, state);
 
   if (state.projectile) {
@@ -25,6 +34,8 @@ export function renderFrame(ctx, state) {
   if (state.phase === 'AIMING' || state.phase === 'POWERING') {
     drawAimPreview(ctx, state);
   }
+
+  ctx.restore();
 }
 
 function drawSky(ctx) {
@@ -62,11 +73,10 @@ function drawStars(ctx, state) {
 }
 
 function drawSkyline(ctx) {
-  // Distant glowing city silhouette
   if (!ctx._skylineCache) {
     ctx._skylineCache = [];
     let x = 0;
-    while (x < CONFIG.CANVAS_W) {
+    while (x < CONFIG.WORLD_W) {
       const w = 40 + Math.random() * 60;
       const h = 40 + Math.random() * 80;
       ctx._skylineCache.push({ x, w, h, hasSpire: Math.random() > 0.7 });
@@ -85,7 +95,6 @@ function drawSkyline(ctx) {
       ctx.fill();
     }
   }
-  // Windows
   ctx.fillStyle = 'rgba(255, 200, 70, 0.45)';
   for (const b of ctx._skylineCache) {
     for (let wy = baseY - b.h + 10; wy < baseY - 6; wy += 12) {
@@ -97,24 +106,22 @@ function drawSkyline(ctx) {
 }
 
 function drawWindStreaks(ctx, state) {
-  // Drifting horizontal clouds that move at wind speed
   if (!state._clouds) {
     state._clouds = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 12; i++) {
       state._clouds.push({
-        x: Math.random() * CONFIG.CANVAS_W,
+        x: Math.random() * CONFIG.WORLD_W,
         y: 60 + Math.random() * 280,
         w: 60 + Math.random() * 140,
         alpha: 0.05 + Math.random() * 0.08
       });
     }
   }
-  // Wind only "blows" cloud particles while not firing (during fire, ducky uses wind)
   const speed = state.wind * 12;
   for (const c of state._clouds) {
     c.x += speed;
-    if (c.x > CONFIG.CANVAS_W + 100) c.x = -c.w;
-    if (c.x < -c.w - 100) c.x = CONFIG.CANVAS_W;
+    if (c.x > CONFIG.WORLD_W + 100) c.x = -c.w;
+    if (c.x < -c.w - 100) c.x = CONFIG.WORLD_W;
     ctx.fillStyle = `rgba(220, 180, 255, ${c.alpha})`;
     ctx.beginPath();
     ctx.ellipse(c.x, c.y, c.w, 14, 0, 0, Math.PI * 2);
@@ -127,27 +134,24 @@ function drawGround(ctx) {
   grad.addColorStop(0, '#2a0a3d');
   grad.addColorStop(1, '#0d0218');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, CONFIG.GROUND_Y, CONFIG.CANVAS_W, CONFIG.CANVAS_H - CONFIG.GROUND_Y);
+  ctx.fillRect(0, CONFIG.GROUND_Y, CONFIG.WORLD_W, CONFIG.CANVAS_H - CONFIG.GROUND_Y);
 
-  // Top edge highlight
   ctx.strokeStyle = 'rgba(255, 211, 61, 0.3)';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(0, CONFIG.GROUND_Y);
-  ctx.lineTo(CONFIG.CANVAS_W, CONFIG.GROUND_Y);
+  ctx.lineTo(CONFIG.WORLD_W, CONFIG.GROUND_Y);
   ctx.stroke();
 }
 
 function drawZones(ctx) {
-  ctx.font = 'bold 14px "Segoe UI", sans-serif';
+  ctx.font = 'bold 13px "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
   for (const z of CONFIG.ZONES) {
-    // Zone strip on the ground
     ctx.fillStyle = z.color;
     ctx.fillRect(z.start, CONFIG.GROUND_Y, z.end - z.start, 8);
 
-    // Glow on top
-    if (z.mult >= 10) {
+    if (z.mult >= 5) {
       const g = ctx.createLinearGradient(0, CONFIG.GROUND_Y - 4, 0, CONFIG.GROUND_Y + 8);
       g.addColorStop(0, z.color + '00');
       g.addColorStop(1, z.color);
@@ -155,35 +159,243 @@ function drawZones(ctx) {
       ctx.fillRect(z.start, CONFIG.GROUND_Y - 4, z.end - z.start, 12);
     }
 
-    // Label
     const cx = (z.start + z.end) / 2;
-    if (z.mult > 0) {
-      const labelColor = z.mult >= 25 ? '#ffd33d' : '#00e5ff';
+    if (z.mult >= 1) {
+      const labelColor = z.mult >= 10 ? '#ffd33d' : '#00e5ff';
       ctx.fillStyle = labelColor;
       ctx.shadowColor = labelColor;
-      ctx.shadowBlur = z.mult >= 25 ? 12 : 6;
+      ctx.shadowBlur = z.mult >= 10 ? 12 : 6;
       ctx.fillText(z.label, cx, CONFIG.GROUND_Y - 10);
       ctx.shadowBlur = 0;
+    } else if (z.mult > 0) {
+      ctx.fillStyle = 'rgba(255, 160, 80, 0.85)';
+      ctx.fillText(z.label, cx, CONFIG.GROUND_Y - 10);
     } else {
-      ctx.fillStyle = 'rgba(255, 80, 80, 0.7)';
+      ctx.fillStyle = 'rgba(255, 80, 80, 0.75)';
       ctx.fillText(z.label, cx, CONFIG.GROUND_Y - 10);
     }
   }
   ctx.textAlign = 'left';
 }
 
+function drawAirTargets(ctx, state) {
+  const t = Date.now() * 0.003;
+  for (const target of CONFIG.AIR_TARGETS) {
+    const hit = state.projectile && state.projectile.airHits && state.projectile.airHits.has(target.id);
+    if (target.type === 'ring') {
+      drawRing(ctx, target, t, hit);
+    } else if (target.type === 'star') {
+      drawStarTarget(ctx, target, t, hit);
+    }
+  }
+}
+
+function drawRing(ctx, target, t, hit) {
+  const pulse = 1 + Math.sin(t) * 0.04;
+  const outer = target.radius * pulse;
+  const inner = target.innerRadius * pulse;
+
+  const glow = ctx.createRadialGradient(target.x, target.y, inner, target.x, target.y, outer + 14);
+  glow.addColorStop(0, 'rgba(255, 211, 61, 0.0)');
+  glow.addColorStop(0.6, 'rgba(255, 211, 61, 0.4)');
+  glow.addColorStop(1, 'rgba(255, 211, 61, 0.0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, outer + 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = hit ? '#fff5b3' : target.color;
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, outer, 0, Math.PI * 2);
+  ctx.arc(target.x, target.y, inner, 0, Math.PI * 2, true);
+  ctx.fill('evenodd');
+
+  ctx.strokeStyle = '#a87c00';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, outer, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, inner, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.font = 'bold 12px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffd33d';
+  ctx.shadowColor = '#ffd33d';
+  ctx.shadowBlur = 10;
+  ctx.fillText(`${target.mult}x`, target.x, target.y - outer - 8);
+  ctx.shadowBlur = 0;
+  ctx.textAlign = 'left';
+}
+
+function drawStarTarget(ctx, target, t, hit) {
+  drawStarShape(ctx, target.x, target.y, target.radius, hit ? '#b3f4ff' : target.color, t);
+  ctx.font = 'bold 11px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = target.color;
+  ctx.shadowColor = target.color;
+  ctx.shadowBlur = 8;
+  ctx.fillText(`${target.mult}x`, target.x, target.y - target.radius - 6);
+  ctx.shadowBlur = 0;
+  ctx.textAlign = 'left';
+}
+
+function drawStarShape(ctx, x, y, r, color, t) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(t * 0.5);
+
+  const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, r + 12);
+  glow.addColorStop(0, color);
+  glow.addColorStop(1, 'rgba(0, 229, 255, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, 0, r + 12, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const angle = (i * Math.PI) / 5 - Math.PI / 2;
+    const radius = i % 2 === 0 ? r : r * 0.45;
+    const px = Math.cos(angle) * radius;
+    const py = Math.sin(angle) * radius;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = '#003a4d';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawObstacles(ctx, state) {
+  const t = Date.now() * 0.004;
+  for (const o of CONFIG.OBSTACLES) {
+    const hit = state.projectile && state.projectile.obstacleHits && state.projectile.obstacleHits.has(o.id);
+    if (o.type === 'spike') drawSpikes(ctx, o, t, hit);
+    else if (o.type === 'bumper') drawBumper(ctx, o, t, hit);
+    else if (o.type === 'cloud') drawStormCloud(ctx, o, t, hit);
+  }
+}
+
+function drawSpikes(ctx, o, t, hit) {
+  const sway = Math.sin(t) * 2;
+  ctx.save();
+  ctx.translate(o.x, o.y + sway);
+
+  ctx.fillStyle = '#2a0a18';
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius * 0.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  const spikes = 8;
+  for (let i = 0; i < spikes; i++) {
+    const a = (i / spikes) * Math.PI * 2;
+    const ax = Math.cos(a) * o.radius * 0.55;
+    const ay = Math.sin(a) * o.radius * 0.55;
+    const tx = Math.cos(a) * o.radius;
+    const ty = Math.sin(a) * o.radius;
+    const px = -Math.sin(a) * 4;
+    const py = Math.cos(a) * 4;
+    ctx.fillStyle = hit ? '#ffb3b3' : o.color;
+    ctx.beginPath();
+    ctx.moveTo(ax + px, ay + py);
+    ctx.lineTo(ax - px, ay - py);
+    ctx.lineTo(tx, ty);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  if (hit) {
+    ctx.strokeStyle = 'rgba(255, 80, 80, 0.7)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, o.radius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawBumper(ctx, o, t, hit) {
+  ctx.save();
+  ctx.translate(o.x, o.y);
+
+  const glow = ctx.createRadialGradient(0, 0, o.radius * 0.5, 0, 0, o.radius + 14);
+  glow.addColorStop(0, 'rgba(0, 229, 255, 0.4)');
+  glow.addColorStop(1, 'rgba(0, 229, 255, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius + 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  const bodyGrad = ctx.createRadialGradient(-6, -6, 2, 0, 0, o.radius);
+  bodyGrad.addColorStop(0, hit ? '#ffffff' : '#a0f0ff');
+  bodyGrad.addColorStop(0.6, '#00e5ff');
+  bodyGrad.addColorStop(1, '#005c66');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  const pulse = 0.5 + 0.5 * Math.sin(t * 2);
+  ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + pulse * 0.5})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, o.radius * 0.7, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawStormCloud(ctx, o, t, hit) {
+  ctx.save();
+  ctx.translate(o.x, o.y);
+
+  const drift = Math.sin(t * 0.5) * 3;
+
+  ctx.fillStyle = hit ? '#9a6fd0' : o.color;
+  const puffs = [
+    { dx: -o.w * 0.35, dy: drift,     rx: o.w * 0.28, ry: o.h * 0.55 },
+    { dx: -o.w * 0.1,  dy: -4 + drift, rx: o.w * 0.32, ry: o.h * 0.6 },
+    { dx:  o.w * 0.18, dy: drift,     rx: o.w * 0.3,  ry: o.h * 0.55 },
+    { dx:  o.w * 0.38, dy: 2 + drift, rx: o.w * 0.25, ry: o.h * 0.5 }
+  ];
+  for (const p of puffs) {
+    ctx.beginPath();
+    ctx.ellipse(p.dx, p.dy, p.rx, p.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if ((Math.floor(t * 4) % 6) === 0) {
+    ctx.strokeStyle = '#ffd33d';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-6, o.h * 0.35);
+    ctx.lineTo(2, o.h * 0.6);
+    ctx.lineTo(-4, o.h * 0.7);
+    ctx.lineTo(6, o.h * 0.95);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
 function drawCannon(ctx, state) {
   const cx = CONFIG.CANNON_BASE_X;
   const cy = CONFIG.CANNON_BASE_Y;
 
-  // Base / platform
   ctx.fillStyle = '#2a1140';
   ctx.fillRect(cx - 42, cy + 16, 84, 44);
   ctx.strokeStyle = '#ffd33d';
   ctx.lineWidth = 2;
   ctx.strokeRect(cx - 42, cy + 16, 84, 44);
 
-  // Wheel
   ctx.fillStyle = '#3a1a55';
   ctx.beginPath();
   ctx.arc(cx, cy + 38, 24, 0, Math.PI * 2);
@@ -191,12 +403,10 @@ function drawCannon(ctx, state) {
   ctx.strokeStyle = '#ffd33d';
   ctx.lineWidth = 2;
   ctx.stroke();
-  // Wheel hub
   ctx.fillStyle = '#ffd33d';
   ctx.beginPath();
   ctx.arc(cx, cy + 38, 6, 0, Math.PI * 2);
   ctx.fill();
-  // Spokes
   ctx.strokeStyle = '#ffd33d';
   ctx.lineWidth = 1.5;
   for (let i = 0; i < 6; i++) {
@@ -207,13 +417,11 @@ function drawCannon(ctx, state) {
     ctx.stroke();
   }
 
-  // Cannon barrel (rotated)
   const angleRad = (state.angle * Math.PI) / 180;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(-angleRad);
 
-  // Barrel body — gold gradient
   const grad = ctx.createLinearGradient(0, -14, 0, 14);
   grad.addColorStop(0, '#ffe66e');
   grad.addColorStop(0.5, '#ffd33d');
@@ -221,22 +429,18 @@ function drawCannon(ctx, state) {
   ctx.fillStyle = grad;
   ctx.fillRect(-4, -14, 78, 28);
 
-  // Outline
   ctx.strokeStyle = '#5a3d00';
   ctx.lineWidth = 2;
   ctx.strokeRect(-4, -14, 78, 28);
 
-  // Decorative band
   ctx.fillStyle = '#a87c00';
   ctx.fillRect(48, -16, 8, 32);
   ctx.strokeStyle = '#5a3d00';
   ctx.strokeRect(48, -16, 8, 32);
 
-  // Muzzle interior
   ctx.fillStyle = '#1a0a2a';
   ctx.fillRect(68, -10, 8, 20);
 
-  // Subtle glow on muzzle while powering
   if (state.phase === 'POWERING') {
     const glowAlpha = 0.3 + 0.3 * Math.sin(Date.now() * 0.01);
     ctx.fillStyle = `rgba(255, 100, 0, ${glowAlpha})`;
@@ -253,7 +457,6 @@ function drawDucky(ctx, p) {
   ctx.translate(p.x, p.y);
   ctx.rotate(p.rotation);
 
-  // Body
   ctx.fillStyle = '#ffd700';
   ctx.beginPath();
   ctx.ellipse(0, 2, 16, 12, 0, 0, Math.PI * 2);
@@ -262,14 +465,12 @@ function drawDucky(ctx, p) {
   ctx.lineWidth = 1.2;
   ctx.stroke();
 
-  // Head
   ctx.fillStyle = '#ffd700';
   ctx.beginPath();
   ctx.arc(8, -8, 9, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // Beak
   ctx.fillStyle = '#ff8c00';
   ctx.beginPath();
   ctx.moveTo(14, -8);
@@ -278,7 +479,6 @@ function drawDucky(ctx, p) {
   ctx.closePath();
   ctx.fill();
 
-  // Eye
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.arc(10, -10, 1.8, 0, Math.PI * 2);
@@ -305,7 +505,6 @@ function drawTrail(ctx, p) {
 }
 
 function drawLandingMarker(ctx, p) {
-  // Pulsing splash circle where the duck landed
   const t = Date.now() * 0.005;
   const r = 12 + 8 * Math.abs(Math.sin(t));
   ctx.strokeStyle = 'rgba(255, 211, 61, 0.7)';

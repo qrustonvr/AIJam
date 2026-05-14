@@ -8,7 +8,7 @@ import { renderFrame } from './render.js';
 import { bindInput } from './input.js';
 import {
   createProjectile, stepProjectile, checkLanding,
-  getZoneAt, randomWind
+  getZoneAt, getBestAirHit, randomWind
 } from './physics.js';
 import {
   updateBalance, updateBetDisplay, updateAngleDisplay,
@@ -37,8 +37,39 @@ const state = {
   wind: 0,
   projectile: null,
   payout: 0,
-  zoneHit: null
+  zoneHit: null,
+  airHit: null,
+  cameraX: 0,
+  cameraTargetX: 0
 };
+
+// ----- Camera helpers -----
+
+function maxCameraX() {
+  return Math.max(0, CONFIG.WORLD_W - CONFIG.CANVAS_W);
+}
+
+function resetCamera() {
+  state.cameraX = 0;
+  state.cameraTargetX = 0;
+}
+
+function updateCamera() {
+  // During FIRING, target keeps duck about 40% across the viewport (a touch left of center)
+  // so we can see ahead of the duck. Outside FIRING, camera glides back to 0.
+  if (state.phase === 'FIRING' && state.projectile && !state.projectile.landed) {
+    const duckX = state.projectile.x;
+    const desired = duckX - CONFIG.CANVAS_W * 0.4;
+    state.cameraTargetX = Math.max(0, Math.min(maxCameraX(), desired));
+  } else if (state.phase === 'RESOLVING' && state.projectile) {
+    const duckX = state.projectile.landX || state.projectile.x;
+    const desired = duckX - CONFIG.CANVAS_W * 0.5;
+    state.cameraTargetX = Math.max(0, Math.min(maxCameraX(), desired));
+  } else {
+    state.cameraTargetX = 0;
+  }
+  state.cameraX += (state.cameraTargetX - state.cameraX) * CONFIG.CAMERA_LERP;
+}
 
 // ----- Phase transitions -----
 
@@ -47,17 +78,17 @@ function newRound() {
   state.projectile = null;
   state.payout = 0;
   state.zoneHit = null;
+  state.airHit = null;
   state.powerMeterPos = 0;
   state.powerMeterDir = 1;
   state.wind = randomWind();
+  resetCamera();
 
-  // If somehow out of chips, refill (jam-friendly)
   if (state.balance < CONFIG.MIN_BET) {
     state.balance = CONFIG.START_BALANCE;
     localStorage.setItem('cannonQuackBalance', String(state.balance));
   }
 
-  // Clamp bet to current balance
   state.bet = Math.max(CONFIG.MIN_BET, Math.min(state.bet, state.balance));
 
   showPhase('betting');
@@ -82,12 +113,10 @@ function lockAngle() {
 }
 
 function fire() {
-  // Map power meter (0..1) to velocity range
   state.lockedPower =
     CONFIG.POWER_MIN_VEL +
     state.powerMeterPos * (CONFIG.POWER_MAX_VEL - CONFIG.POWER_MIN_VEL);
 
-  // Spawn projectile at the cannon muzzle
   const rad = (state.angle * Math.PI) / 180;
   const sx = CONFIG.CANNON_BASE_X + Math.cos(rad) * CONFIG.MUZZLE_DIST;
   const sy = CONFIG.CANNON_BASE_Y - Math.sin(rad) * CONFIG.MUZZLE_DIST;
@@ -101,14 +130,23 @@ function fire() {
 function resolveLanding() {
   const zone = getZoneAt(state.projectile.x);
   state.zoneHit = zone;
-  state.payout = Math.round(state.bet * zone.mult);
+
+  const airHit = getBestAirHit(state.projectile);
+  state.airHit = airHit;
+
+  // Air target overrides ground zone — if you thread the ring or hit the star
+  // mid-flight, you get that multiplier no matter where the duck lands.
+  const effectiveMult = airHit ? airHit.mult : zone.mult;
+  state.payout = Math.round(state.bet * effectiveMult);
   state.balance += state.payout;
   localStorage.setItem('cannonQuackBalance', String(state.balance));
 
   showResult(state);
   showBigWin(state);
-  if (zone.mult >= 10) play('win');
-  else if (zone.mult > 0) play('quack');
+
+  if (airHit && airHit.mult >= 100) play('win');
+  else if (effectiveMult >= 5) play('win');
+  else if (effectiveMult >= 1) play('quack');
   else play('splash');
 
   state.phase = 'RESOLVING';
@@ -133,7 +171,6 @@ function update() {
   }
 
   if (state.phase === 'FIRING' && state.projectile) {
-    // Several physics substeps per frame for smoother arc
     for (let i = 0; i < 2; i++) {
       stepProjectile(state.projectile, 0.5);
       if (checkLanding(state.projectile)) {
@@ -142,6 +179,8 @@ function update() {
       }
     }
   }
+
+  updateCamera();
 }
 
 // ----- Main loop -----
