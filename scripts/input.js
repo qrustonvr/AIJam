@@ -1,5 +1,5 @@
 // =====================================================
-// DOM input wiring — bet, angle, fire, replay
+// DOM input wiring — bet, angle, fire, replay, auto-bet
 // =====================================================
 
 import { CONFIG } from './config.js';
@@ -25,23 +25,17 @@ export function bindInput(state, callbacks) {
     });
   });
 
-  // ----- Lock bet -----
+  // ----- Lock bet / Start round -----
   document.getElementById('btn-lock-bet').addEventListener('click', () => {
     if (state.phase !== 'BETTING') return;
     callbacks.onLockBet();
   });
 
-  // ----- Angle slider -----
+  // ----- Angle slider (active during POWERING) -----
   const slider = document.getElementById('angle-slider');
   slider.addEventListener('input', (e) => {
     state.angle = parseInt(e.target.value, 10);
     callbacks.onAngleChange();
-  });
-
-  // ----- Lock angle -----
-  document.getElementById('btn-lock-angle').addEventListener('click', () => {
-    if (state.phase !== 'AIMING') return;
-    callbacks.onLockAngle();
   });
 
   // ----- Fire button -----
@@ -50,7 +44,7 @@ export function bindInput(state, callbacks) {
     callbacks.onFire();
   });
 
-  // ----- Spacebar to fire -----
+  // ----- Spacebar: fire or advance -----
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
       e.preventDefault();
@@ -63,6 +57,16 @@ export function bindInput(state, callbacks) {
   document.getElementById('btn-play-again').addEventListener('click', () => {
     if (state.phase !== 'RESOLVING') return;
     callbacks.onPlayAgain();
+  });
+
+  // ----- Auto-bet toggle -----
+  document.getElementById('btn-auto-bet').addEventListener('click', () => {
+    callbacks.onToggleAutoBet();
+  });
+
+  // ----- Cancel auto-bet countdown -----
+  document.getElementById('btn-cancel-auto').addEventListener('click', () => {
+    callbacks.onCancelAutoBet();
   });
 }
 

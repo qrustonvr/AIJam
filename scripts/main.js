@@ -1,6 +1,6 @@
 // =====================================================
 // CANNON QUACK — game loop & state machine
-// Phases: BETTING -> AIMING -> POWERING -> FIRING -> RESOLVING
+// Phases: BETTING -> POWERING -> FIRING -> RESOLVING
 // =====================================================
 
 import { CONFIG } from './config.js';
@@ -13,14 +13,15 @@ import {
 import {
   updateBalance, updateBetDisplay, updateAngleDisplay,
   updatePowerNeedle, updateWindIndicator,
-  showPhase, showResult, showBigWin
+  showPhase, showResult, showBigWin,
+  setAutoBetButton, showAutoBetCountdown, hideAutoBetCountdown
 } from './ui.js';
 import { preload, play } from './audio.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
-// ----- Boot state (with persistent balance) -----
+// ----- Boot state -----
 const savedBalance = parseInt(localStorage.getItem('cannonQuackBalance'), 10);
 const initialBalance = !isNaN(savedBalance) && savedBalance >= CONFIG.MIN_BET
   ? savedBalance
@@ -40,11 +41,46 @@ const state = {
   zoneHit: null,
   airHit: null,
   cameraX: 0,
-  cameraTargetX: 0
+  cameraTargetX: 0,
+  autoBet: false
 };
 
-// ----- Camera helpers -----
+// ----- Auto-bet timer -----
+let autoBetTimerId = null;
+let autoBetCountdownId = null;
 
+function cancelAutoBetTimer() {
+  if (autoBetTimerId) { clearTimeout(autoBetTimerId); autoBetTimerId = null; }
+  if (autoBetCountdownId) { clearInterval(autoBetCountdownId); autoBetCountdownId = null; }
+  hideAutoBetCountdown();
+}
+
+function scheduleAutoBet() {
+  cancelAutoBetTimer();
+  let seconds = 5;
+  showAutoBetCountdown(seconds);
+  autoBetCountdownId = setInterval(() => {
+    seconds--;
+    if (seconds > 0) {
+      showAutoBetCountdown(seconds);
+    } else {
+      clearInterval(autoBetCountdownId);
+      autoBetCountdownId = null;
+    }
+  }, 1000);
+  autoBetTimerId = setTimeout(() => {
+    autoBetTimerId = null;
+    autoStartRound();
+  }, 5000);
+}
+
+function autoStartRound() {
+  cancelAutoBetTimer();
+  newRound();
+  lockBet();
+}
+
+// ----- Camera helpers -----
 function maxCameraX() {
   return Math.max(0, CONFIG.WORLD_W - CONFIG.CANVAS_W);
 }
@@ -55,8 +91,6 @@ function resetCamera() {
 }
 
 function updateCamera() {
-  // During FIRING, target keeps duck about 40% across the viewport (a touch left of center)
-  // so we can see ahead of the duck. Outside FIRING, camera glides back to 0.
   if (state.phase === 'FIRING' && state.projectile && !state.projectile.landed) {
     const duckX = state.projectile.x;
     const desired = duckX - CONFIG.CANVAS_W * 0.4;
@@ -74,6 +108,7 @@ function updateCamera() {
 // ----- Phase transitions -----
 
 function newRound() {
+  cancelAutoBetTimer();
   state.phase = 'BETTING';
   state.projectile = null;
   state.payout = 0;
@@ -99,20 +134,17 @@ function newRound() {
 }
 
 function lockBet() {
+  if (state.phase !== 'BETTING') return;
   if (state.balance < state.bet) return;
   state.balance -= state.bet;
   localStorage.setItem('cannonQuackBalance', String(state.balance));
   updateBalance(state);
-  state.phase = 'AIMING';
-  showPhase('aiming');
-}
-
-function lockAngle() {
   state.phase = 'POWERING';
   showPhase('power');
 }
 
 function fire() {
+  if (state.phase !== 'POWERING') return;
   state.lockedPower =
     CONFIG.POWER_MIN_VEL +
     state.powerMeterPos * (CONFIG.POWER_MAX_VEL - CONFIG.POWER_MIN_VEL);
@@ -134,8 +166,6 @@ function resolveLanding() {
   const airHit = getBestAirHit(state.projectile);
   state.airHit = airHit;
 
-  // Air target overrides ground zone — if you thread the ring or hit the star
-  // mid-flight, you get that multiplier no matter where the duck lands.
   const effectiveMult = airHit ? airHit.mult : zone.mult;
   state.payout = Math.round(state.bet * effectiveMult);
   state.balance += state.payout;
@@ -152,6 +182,8 @@ function resolveLanding() {
   state.phase = 'RESOLVING';
   showPhase('result');
   updateBalance(state);
+
+  if (state.autoBet) scheduleAutoBet();
 }
 
 // ----- Update -----
@@ -197,9 +229,19 @@ bindInput(state, {
   onBetChange: () => updateBetDisplay(state),
   onAngleChange: () => updateAngleDisplay(state),
   onLockBet: lockBet,
-  onLockAngle: lockAngle,
   onFire: fire,
-  onPlayAgain: newRound
+  onPlayAgain: () => {
+    cancelAutoBetTimer();
+    newRound();
+  },
+  onToggleAutoBet: () => {
+    state.autoBet = !state.autoBet;
+    setAutoBetButton(state.autoBet);
+    if (!state.autoBet) cancelAutoBetTimer();
+  },
+  onCancelAutoBet: () => {
+    cancelAutoBetTimer();
+  }
 });
 
 preload();

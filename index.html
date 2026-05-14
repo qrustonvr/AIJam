@@ -22,30 +22,33 @@
       </div>
     </header>
 
-    <main class="stage">
-      <canvas id="game-canvas" width="1280" height="720"></canvas>
+    <div class="game-area">
+      <main class="stage">
+        <canvas id="game-canvas" width="1280" height="720"></canvas>
 
-      <div class="wind-indicator" id="wind-indicator">
-        <span class="label">WIND</span>
-        <div class="wind-arrow" id="wind-arrow">&rarr;</div>
-        <span class="wind-value" id="wind-value">0</span>
-      </div>
+        <div class="wind-indicator" id="wind-indicator">
+          <span class="label">WIND</span>
+          <div class="wind-arrow" id="wind-arrow">&rarr;</div>
+          <span class="wind-value" id="wind-value">0</span>
+        </div>
 
-      <div class="result-banner" id="result-banner" hidden>
-        <div class="result-title" id="result-title">BIG WIN!</div>
-        <div class="result-subtitle" id="result-subtitle">+500 CHIPS</div>
-      </div>
-    </main>
+        <div class="result-banner" id="result-banner" hidden>
+          <div class="result-title" id="result-title">BIG WIN!</div>
+          <div class="result-subtitle" id="result-subtitle">+500 CHIPS</div>
+        </div>
+      </main>
 
-    <footer class="control-panel">
-      <!-- BETTING PHASE -->
-      <section class="control-section" id="phase-betting">
-        <div class="bet-control">
+      <!-- RIGHT SIDE BET PANEL — always visible -->
+      <aside class="bet-panel">
+        <div class="bet-panel-section">
           <span class="control-label">YOUR BET</span>
+          <div class="bet-value-row">
+            <span id="bet-value" class="bet-value">50</span>
+            <span class="bet-chip-label">CHIPS</span>
+          </div>
           <div class="bet-buttons">
             <button class="btn-step" data-bet-delta="-50">&minus;50</button>
             <button class="btn-step" data-bet-delta="-10">&minus;10</button>
-            <span id="bet-value" class="bet-value">50</span>
             <button class="btn-step" data-bet-delta="10">+10</button>
             <button class="btn-step" data-bet-delta="50">+50</button>
           </div>
@@ -55,21 +58,41 @@
             <button class="btn-quick" data-bet-set="500">MAX</button>
           </div>
         </div>
-        <button class="btn-primary" id="btn-lock-bet">LOCK BET &rarr;</button>
+
+        <div class="bet-panel-divider"></div>
+
+        <button class="btn-primary btn-start-round" id="btn-lock-bet">START ROUND &rarr;</button>
+
+        <div class="bet-panel-divider"></div>
+
+        <div class="auto-bet-section">
+          <div class="auto-bet-row">
+            <span class="control-label" style="margin:0">AUTO BET</span>
+            <button class="btn-auto-bet" id="btn-auto-bet" data-active="false">OFF</button>
+          </div>
+          <div id="auto-bet-countdown" class="auto-bet-countdown" hidden>
+            Next round in <span id="auto-bet-timer">5</span>s
+            <button class="btn-cancel-auto" id="btn-cancel-auto">CANCEL</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="control-panel">
+      <!-- IDLE / BETTING hint -->
+      <section class="control-section" id="phase-betting">
+        <div class="watching">
+          <span class="watching-label">&#8592; SET YOUR BET AND START THE ROUND</span>
+        </div>
       </section>
 
-      <!-- AIMING PHASE -->
-      <section class="control-section" id="phase-aiming" hidden>
+      <!-- POWER + ANGLE PHASE (combined) -->
+      <section class="control-section" id="phase-power" hidden>
         <div class="aim-control">
           <span class="control-label">ANGLE</span>
           <input type="range" id="angle-slider" min="10" max="80" value="45" step="1" />
           <span id="angle-value" class="angle-value">45&deg;</span>
         </div>
-        <button class="btn-primary" id="btn-lock-angle">LOCK ANGLE &rarr;</button>
-      </section>
-
-      <!-- POWER PHASE -->
-      <section class="control-section" id="phase-power" hidden>
         <div class="power-control">
           <span class="control-label">POWER &mdash; TAP FIRE TO LOCK (or SPACE)</span>
           <div class="power-meter">

@@ -43,14 +43,23 @@ export function updateWindIndicator(state) {
 }
 
 export function showPhase(name) {
-  ['betting', 'aiming', 'power', 'firing', 'result'].forEach(p => {
+  ['betting', 'power', 'firing', 'result'].forEach(p => {
     const el = $(`phase-${p}`);
     if (el) el.hidden = (p !== name);
+  });
+
+  // Disable bet panel controls while round is in progress
+  const inBetting = name === 'betting';
+  ['btn-lock-bet'].forEach(id => {
+    const el = $(id);
+    if (el) el.disabled = !inBetting;
+  });
+  document.querySelectorAll('[data-bet-delta], [data-bet-set]').forEach(btn => {
+    btn.disabled = !inBetting;
   });
 }
 
 export function showResult(state) {
-  // The air target supersedes the ground zone when paying out.
   let zoneText;
   if (state.airHit) {
     zoneText = `THREADED THE ${state.airHit.label}!`;
@@ -89,4 +98,24 @@ export function showBigWin(state) {
     banner.hidden = false;
     setTimeout(() => { banner.hidden = true; }, 2400);
   }
+}
+
+export function setAutoBetButton(active) {
+  const btn = $('btn-auto-bet');
+  if (!btn) return;
+  btn.dataset.active = active ? 'true' : 'false';
+  btn.textContent = active ? 'ON' : 'OFF';
+}
+
+export function showAutoBetCountdown(seconds) {
+  const el = $('auto-bet-countdown');
+  const timerEl = $('auto-bet-timer');
+  if (!el || !timerEl) return;
+  el.hidden = false;
+  timerEl.textContent = seconds;
+}
+
+export function hideAutoBetCountdown() {
+  const el = $('auto-bet-countdown');
+  if (el) el.hidden = true;
 }
