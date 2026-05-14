@@ -1,0 +1,6 @@
+# AI-generated sprites land here.
+# Expected files:
+#   ducky.png       — the VI ducky mascot (transparent background, ~64px)
+#   cannon.png      — gold cannon barrel (transparent, side profile)
+#   skyline.png     — distant Vegas skyline (parallax background)
+#   bg-gradient.png — optional purple/magenta sky gradient

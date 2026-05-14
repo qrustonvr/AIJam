@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cannon Quack — a Vegas Infinite original casino game." />
+  <title>Cannon Quack — Vegas Infinite</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="top-hud">
+      <div class="brand">
+        <span class="brand-mark">&#9893;</span>
+        <span class="brand-name">VEGAS <span class="accent">INFINITE</span></span>
+        <span class="game-title">CANNON QUACK</span>
+      </div>
+      <div class="balance-display">
+        <span class="label">BALANCE</span>
+        <span id="balance-value" class="value">1,000</span>
+        <span class="chip">CHIPS</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+      <div class="wind-indicator" id="wind-indicator">
+        <span class="label">WIND</span>
+        <div class="wind-arrow" id="wind-arrow">&rarr;</div>
+        <span class="wind-value" id="wind-value">0</span>
+      </div>
+
+      <div class="result-banner" id="result-banner" hidden>
+        <div class="result-title" id="result-title">BIG WIN!</div>
+        <div class="result-subtitle" id="result-subtitle">+500 CHIPS</div>
+      </div>
+    </main>
+
+    <footer class="control-panel">
+      <!-- BETTING PHASE -->
+      <section class="control-section" id="phase-betting">
+        <div class="bet-control">
+          <span class="control-label">YOUR BET</span>
+          <div class="bet-buttons">
+            <button class="btn-step" data-bet-delta="-50">&minus;50</button>
+            <button class="btn-step" data-bet-delta="-10">&minus;10</button>
+            <span id="bet-value" class="bet-value">50</span>
+            <button class="btn-step" data-bet-delta="10">+10</button>
+            <button class="btn-step" data-bet-delta="50">+50</button>
+          </div>
+          <div class="bet-quick">
+            <button class="btn-quick" data-bet-set="10">MIN</button>
+            <button class="btn-quick" data-bet-set="100">100</button>
+            <button class="btn-quick" data-bet-set="500">MAX</button>
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-lock-bet">LOCK BET &rarr;</button>
+      </section>
+
+      <!-- AIMING PHASE -->
+      <section class="control-section" id="phase-aiming" hidden>
+        <div class="aim-control">
+          <span class="control-label">ANGLE</span>
+          <input type="range" id="angle-slider" min="10" max="80" value="45" step="1" />
+          <span id="angle-value" class="angle-value">45&deg;</span>
+        </div>
+        <button class="btn-primary" id="btn-lock-angle">LOCK ANGLE &rarr;</button>
+      </section>
+
+      <!-- POWER PHASE -->
+      <section class="control-section" id="phase-power" hidden>
+        <div class="power-control">
+          <span class="control-label">POWER &mdash; TAP FIRE TO LOCK (or SPACE)</span>
+          <div class="power-meter">
+            <div class="power-meter-track">
+              <div class="power-meter-needle" id="power-needle"></div>
+              <div class="power-meter-zones">
+                <span>LOW</span>
+                <span>MID</span>
+                <span>HIGH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-fire" id="btn-fire">FIRE!</button>
+      </section>
+
+      <!-- WATCH PHASE -->
+      <section class="control-section" id="phase-firing" hidden>
+        <div class="watching">
+          <span class="watching-label">&darr; TRACKING DUCKY &darr;</span>
+        </div>
+      </section>
+
+      <!-- RESULT PHASE -->
+      <section class="control-section" id="phase-result" hidden>
+        <div class="result-summary">
+          <span id="result-zone" class="result-zone">Landed: 4x VALLEY</span>
+          <span id="result-payout" class="result-payout">+200</span>
+        </div>
+        <button class="btn-primary" id="btn-play-again">PLAY AGAIN &rarr;</button>
+      </section>
+    </footer>
+  </div>
+
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
