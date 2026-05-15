@@ -147,5 +147,6 @@ export const CONFIG = {
   POWER_MAX_VEL: 33,
 
   // Cannon muzzle distance from pivot (where the duck spawns)
-  MUZZLE_DIST: 78
+  // Matches the sprite muzzle tip: (0.82W, -0.18H) from breech anchor = ~95px
+  MUZZLE_DIST: 95
 };

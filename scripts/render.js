@@ -5,6 +5,10 @@
 
 import { CONFIG } from './config.js';
 
+// Cannon sprite — loaded once, reused every frame
+const _cannonImg = new Image();
+_cannonImg.src = 'assets/images/Cannon.png';
+
 export function renderFrame(ctx, state) {
   ctx.clearRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
 
@@ -433,63 +437,34 @@ function drawStormCloud(ctx, o, t, hit) {
 function drawCannon(ctx, state) {
   const cx = CONFIG.CANNON_BASE_X;
   const cy = CONFIG.CANNON_BASE_Y;
-
-  ctx.fillStyle = '#2a1140';
-  ctx.fillRect(cx - 42, cy + 16, 84, 44);
-  ctx.strokeStyle = '#ffd33d';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(cx - 42, cy + 16, 84, 44);
-
-  ctx.fillStyle = '#3a1a55';
-  ctx.beginPath();
-  ctx.arc(cx, cy + 38, 24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#ffd33d';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = '#ffd33d';
-  ctx.beginPath();
-  ctx.arc(cx, cy + 38, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#ffd33d';
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + 38);
-    ctx.lineTo(cx + Math.cos(a) * 22, cy + 38 + Math.sin(a) * 22);
-    ctx.stroke();
-  }
-
   const angleRad = (state.angle * Math.PI) / 180;
+
+  const W = 115;
+  const H = 80;
+
+  // Flipped image: muzzle (opening) on RIGHT ~90%, breech (ball/knob) on LEFT ~8%.
+  // Anchor at the breech so the cannon rotates around its base.
+  const BX = W * 0.08;   // breech x — ~8% from left
+  const BY = H * 0.68;   // breech y — ~68% from top (lower area of the image)
+
+  // Natural barrel tilt: muzzle at (~90% x, ~50% y) vs breech at (~8% x, ~68% y).
+  // In the local frame the muzzle sits at (0.82W, -0.18H) — slightly ABOVE the +x axis.
+  // TILT_CORRECTION rotates the frame clockwise to level the barrel.
+  // Negative value = add a small clockwise nudge (canvas y-down convention).
+  const TILT_CORRECTION = -0.14; // ~8° — tweak ±0.02 if barrel looks off
+
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(-angleRad);
+  ctx.rotate(-angleRad - TILT_CORRECTION); // no scale/flip needed — image already faces right
+  ctx.drawImage(_cannonImg, -BX, -BY, W, H);
 
-  const grad = ctx.createLinearGradient(0, -14, 0, 14);
-  grad.addColorStop(0, '#ffe66e');
-  grad.addColorStop(0.5, '#ffd33d');
-  grad.addColorStop(1, '#a87c00');
-  ctx.fillStyle = grad;
-  ctx.fillRect(-4, -14, 78, 28);
-
-  ctx.strokeStyle = '#5a3d00';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(-4, -14, 78, 28);
-
-  ctx.fillStyle = '#a87c00';
-  ctx.fillRect(48, -16, 8, 32);
-  ctx.strokeStyle = '#5a3d00';
-  ctx.strokeRect(48, -16, 8, 32);
-
-  ctx.fillStyle = '#1a0a2a';
-  ctx.fillRect(68, -10, 8, 20);
-
+  // Muzzle glow during POWERING — drawn at muzzle position in local frame.
+  // Muzzle local coords = (MX - BX, MY - BY) = (0.82W, -0.18H)
   if (state.phase === 'POWERING') {
     const glowAlpha = 0.3 + 0.3 * Math.sin(Date.now() * 0.01);
-    ctx.fillStyle = `rgba(255, 100, 0, ${glowAlpha})`;
+    ctx.fillStyle = `rgba(255, 120, 0, ${glowAlpha})`;
     ctx.beginPath();
-    ctx.arc(74, 0, 8, 0, Math.PI * 2);
+    ctx.arc(W * 0.82, -H * 0.18, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 
