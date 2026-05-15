@@ -18,12 +18,12 @@
   --panel-border: rgba(255, 211, 61, 0.28);
 
   /* Site shell */
-  --sidebar-bg:   #0c0820;
+  --sidebar-bg:   #000000;
   --sidebar-w:    210px;
-  --topbar-bg:    #110930;
+  --topbar-bg:    #000000;
   --topbar-h:     58px;
-  --site-border:  rgba(111, 43, 176, 0.30);
-  --content-bg:   #080618;
+  --site-border:  rgba(111, 43, 176, 0.75);
+  --content-bg:   #000000;
 }
 
 /* Prevent display:flex overriding the HTML hidden attribute */
@@ -33,7 +33,7 @@
 
 html, body {
   height: 100%;
-  background: var(--content-bg);
+  background: #000000;
   color: var(--text);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   overflow: hidden;
@@ -55,7 +55,8 @@ html, body {
   width: var(--sidebar-w);
   flex-shrink: 0;
   background: var(--sidebar-bg);
-  border-right: 1px solid var(--site-border);
+  border-right: 1px solid var(--purple);
+  box-shadow: 1px 0 18px rgba(111, 43, 176, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -66,7 +67,8 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 16px 18px 14px;
-  border-bottom: 1px solid var(--site-border);
+  border-bottom: 1px solid var(--magenta);
+  box-shadow: 0 1px 12px rgba(215, 43, 120, 0.25);
   flex-shrink: 0;
 }
 
@@ -175,7 +177,8 @@ html, body {
   height: var(--topbar-h);
   flex-shrink: 0;
   background: var(--topbar-bg);
-  border-bottom: 1px solid var(--site-border);
+  border-bottom: 1px solid var(--cyan);
+  box-shadow: 0 1px 18px rgba(0, 229, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -209,42 +212,6 @@ html, body {
   flex-shrink: 0;
 }
 
-.vi-btn-login {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 22px;
-  padding: 7px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.vi-btn-login:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.vi-btn-create {
-  background: linear-gradient(135deg, var(--magenta), var(--purple));
-  color: white;
-  border: none;
-  border-radius: 22px;
-  padding: 7px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.15s;
-  box-shadow: 0 0 16px rgba(215, 43, 120, 0.35);
-}
-
-.vi-btn-create:hover {
-  box-shadow: 0 0 24px rgba(215, 43, 120, 0.55);
-  transform: translateY(-1px);
-}
 
 .vi-avatar {
   width: 34px;
@@ -293,7 +260,7 @@ html, body {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  background: var(--content-bg);
+  background: #000000;
   padding: 14px;
 }
 
@@ -305,11 +272,11 @@ html, body {
   min-height: 0;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--site-border);
+  border: 1px solid var(--magenta);
   box-shadow:
-    0 0 0 1px rgba(215, 43, 120, 0.08),
-    0 0 60px rgba(111, 43, 176, 0.15),
-    inset 0 0 60px rgba(10, 2, 26, 0.4);
+    0 0 0 1px rgba(111, 43, 176, 0.4),
+    0 0 40px rgba(215, 43, 120, 0.20),
+    0 0 80px rgba(111, 43, 176, 0.12);
 }
 
 .vi-game-titlebar {
@@ -319,8 +286,9 @@ html, body {
   padding: 0 16px;
   height: 40px;
   flex-shrink: 0;
-  background: rgba(12, 8, 32, 0.95);
-  border-bottom: 1px solid var(--site-border);
+  background: #000000;
+  border-bottom: 1px solid var(--purple);
+  box-shadow: 0 1px 10px rgba(111, 43, 176, 0.3);
 }
 
 .vi-game-titlebar-left {
@@ -836,6 +804,5 @@ html, body {
   .vi-nav-active { border-bottom-color: var(--magenta); }
   .vi-nav-section-label { display: none; }
   .vi-search { display: none; }
-  .vi-btn-create span { display: none; }
   .bet-panel { width: 170px; padding: 12px 10px; }
 }
