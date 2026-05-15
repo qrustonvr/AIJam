@@ -1,29 +1,38 @@
 /* =====================================================
    CANNON QUACK — Vegas Infinite original
-   Palette: deep purple, magenta, gold, neon cyan
+   Brand palette from VI Brand Bible
    ===================================================== */
 
 :root {
-  /* Core game palette */
-  --bg-deep:    #0a021a;
-  --bg-mid:     #2a0a3d;
-  --purple:     #6f2bb0;
-  --magenta:    #d72b78;
-  --gold:       #ffd33d;
-  --gold-soft:  #ffe66e;
-  --cyan:       #00e5ff;
-  --text:       #ffffff;
-  --text-muted: #a08fc0;
-  --panel:      rgba(20, 5, 40, 0.92);
-  --panel-border: rgba(255, 211, 61, 0.28);
+  /* ── Vegas Infinite brand colours ── */
+  --vi-pink:    #fb009f;   /* hot pink  – CTAs, active states     */
+  --vi-purple:  #9500c6;   /* brand purple – ALL border lines      */
+  --vi-blue:    #173dff;   /* electric blue                        */
+  --vi-cyan:    #2afeff;   /* neon cyan – wind, highlights         */
+  --vi-yellow:  #fde054;   /* gold/yellow – chips, values          */
+  --vi-amber:   #f59f41;   /* amber                                */
+  --vi-orange:  #fc6b23;   /* orange – fire button                 */
+  --vi-red:     #f8050e;   /* red                                  */
+  --vi-cream:   #fbf4db;   /* cream – primary text (never white)   */
 
-  /* Site shell */
-  --sidebar-bg:   #000000;
-  --sidebar-w:    210px;
-  --topbar-bg:    #000000;
-  --topbar-h:     58px;
-  --site-border:  rgba(111, 43, 176, 0.75);
-  --content-bg:   #000000;
+  /* ── Derived tokens ── */
+  --text:        var(--vi-cream);
+  --text-muted:  rgba(251, 244, 219, 0.45);
+  --gold:        var(--vi-yellow);
+
+  /* One consistent line/border colour used everywhere in the site shell */
+  --line:        var(--vi-purple);
+  --line-glow:   rgba(149, 0, 198, 0.40);
+
+  /* Backgrounds */
+  --bg-black:    #000000;
+  --bg-game:     #0a021a;   /* canvas area keeps deep purple feel   */
+  --panel:       rgba(8, 2, 18, 0.94);
+  --panel-border: rgba(149, 0, 198, 0.32);
+
+  /* Layout */
+  --sidebar-w: 210px;
+  --topbar-h:  58px;
 }
 
 /* Prevent display:flex overriding the HTML hidden attribute */
@@ -33,7 +42,7 @@
 
 html, body {
   height: 100%;
-  background: #000000;
+  background: var(--bg-black);
   color: var(--text);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   overflow: hidden;
@@ -50,13 +59,13 @@ html, body {
   overflow: hidden;
 }
 
-/* ===== SIDEBAR ===== */
+/* ── SIDEBAR ── */
 .vi-sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--purple);
-  box-shadow: 1px 0 18px rgba(111, 43, 176, 0.35);
+  background: var(--bg-black);
+  border-right: 1px solid var(--line);
+  box-shadow: 1px 0 20px var(--line-glow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -67,14 +76,14 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 16px 18px 14px;
-  border-bottom: 1px solid var(--magenta);
-  box-shadow: 0 1px 12px rgba(215, 43, 120, 0.25);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 12px var(--line-glow);
   flex-shrink: 0;
 }
 
 .vi-logo-mark {
   flex-shrink: 0;
-  filter: drop-shadow(0 0 8px rgba(215, 43, 120, 0.5));
+  filter: drop-shadow(0 0 8px rgba(251, 0, 159, 0.55));
 }
 
 .vi-logo-text {
@@ -94,8 +103,8 @@ html, body {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: var(--gold);
-  text-shadow: 0 0 8px rgba(255, 211, 61, 0.5);
+  color: var(--vi-yellow);
+  text-shadow: 0 0 8px rgba(253, 224, 84, 0.5);
 }
 
 .vi-sidebar-scroll {
@@ -107,7 +116,10 @@ html, body {
 
 .vi-sidebar-scroll::-webkit-scrollbar { width: 3px; }
 .vi-sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-.vi-sidebar-scroll::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 2px; }
+.vi-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--vi-purple);
+  border-radius: 2px;
+}
 
 .vi-nav { display: flex; flex-direction: column; }
 
@@ -115,7 +127,7 @@ html, body {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 3px;
-  color: #5a4a7a;
+  color: rgba(251, 244, 219, 0.25);
   padding: 6px 18px 8px;
   text-transform: uppercase;
 }
@@ -127,7 +139,7 @@ html, body {
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 500;
-  color: #c0a8e0;
+  color: rgba(251, 244, 219, 0.55);
   text-decoration: none;
   transition: all 0.15s;
   border-left: 3px solid transparent;
@@ -135,13 +147,13 @@ html, body {
 }
 
 .vi-nav-item:hover {
-  background: rgba(111, 43, 176, 0.15);
+  background: rgba(149, 0, 198, 0.15);
   color: var(--text);
 }
 
 .vi-nav-active {
-  background: rgba(111, 43, 176, 0.20);
-  border-left-color: var(--magenta);
+  background: rgba(149, 0, 198, 0.20);
+  border-left-color: var(--vi-pink);
   color: var(--text);
 }
 
@@ -158,13 +170,13 @@ html, body {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, var(--magenta), var(--purple));
+  background: linear-gradient(135deg, var(--vi-pink), var(--vi-purple));
   color: white;
   padding: 2px 6px;
   border-radius: 10px;
 }
 
-/* ===== TOP BAR ===== */
+/* ── TOP BAR ── */
 .vi-main {
   flex: 1;
   display: flex;
@@ -176,9 +188,9 @@ html, body {
 .vi-topbar {
   height: var(--topbar-h);
   flex-shrink: 0;
-  background: var(--topbar-bg);
-  border-bottom: 1px solid var(--cyan);
-  box-shadow: 0 1px 18px rgba(0, 229, 255, 0.18);
+  background: var(--bg-black);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 20px var(--line-glow);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -190,8 +202,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(111, 43, 176, 0.35);
+  background: rgba(149, 0, 198, 0.08);
+  border: 1px solid rgba(149, 0, 198, 0.40);
   border-radius: 22px;
   padding: 7px 16px;
   min-width: 220px;
@@ -201,7 +213,7 @@ html, body {
 
 .vi-search-placeholder {
   font-size: 13px;
-  color: #5a4a7a;
+  color: rgba(251, 244, 219, 0.28);
   letter-spacing: 0.5px;
 }
 
@@ -212,13 +224,12 @@ html, body {
   flex-shrink: 0;
 }
 
-
 .vi-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(111, 43, 176, 0.25);
-  border: 1px solid rgba(111, 43, 176, 0.5);
+  background: rgba(149, 0, 198, 0.20);
+  border: 1px solid var(--vi-purple);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,45 +237,50 @@ html, body {
   transition: all 0.15s;
 }
 
-.vi-avatar:hover { background: rgba(111, 43, 176, 0.4); }
+.vi-avatar:hover {
+  background: rgba(149, 0, 198, 0.38);
+  box-shadow: 0 0 10px var(--line-glow);
+}
 
-/* Balance display in topbar */
+/* Balance chip */
 .balance-display {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 211, 61, 0.07);
+  background: rgba(253, 224, 84, 0.07);
   padding: 6px 14px;
-  border: 1px solid rgba(255, 211, 61, 0.35);
+  border: 1px solid rgba(253, 224, 84, 0.38);
   border-radius: 22px;
   font-size: 11px;
   letter-spacing: 1px;
 }
 
 .balance-display .label { color: var(--text-muted); }
+
 .balance-display .value {
-  color: var(--gold);
+  color: var(--vi-yellow);
   font-size: 18px;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(255, 211, 61, 0.5);
+  text-shadow: 0 0 10px rgba(253, 224, 84, 0.5);
 }
+
 .balance-display .chip {
   color: var(--text-muted);
   font-size: 9px;
 }
 
-/* ===== CONTENT AREA ===== */
+/* ── CONTENT AREA ── */
 .vi-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  background: #000000;
+  background: var(--bg-black);
   padding: 14px;
 }
 
-/* ===== GAME EMBED ===== */
+/* ── GAME EMBED CARD ── */
 .vi-game-embed {
   flex: 1;
   display: flex;
@@ -272,11 +288,11 @@ html, body {
   min-height: 0;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--magenta);
+  border: 1px solid var(--line);
   box-shadow:
-    0 0 0 1px rgba(111, 43, 176, 0.4),
-    0 0 40px rgba(215, 43, 120, 0.20),
-    0 0 80px rgba(111, 43, 176, 0.12);
+    0 0 0 1px rgba(251, 0, 159, 0.12),
+    0 0 40px var(--line-glow),
+    0 0 80px rgba(149, 0, 198, 0.10);
 }
 
 .vi-game-titlebar {
@@ -286,9 +302,9 @@ html, body {
   padding: 0 16px;
   height: 40px;
   flex-shrink: 0;
-  background: #000000;
-  border-bottom: 1px solid var(--purple);
-  box-shadow: 0 1px 10px rgba(111, 43, 176, 0.3);
+  background: var(--bg-black);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 12px var(--line-glow);
 }
 
 .vi-game-titlebar-left {
@@ -311,7 +327,7 @@ html, body {
   letter-spacing: 2px;
   color: var(--text-muted);
   padding: 2px 8px;
-  border: 1px solid var(--site-border);
+  border: 1px solid rgba(149, 0, 198, 0.45);
   border-radius: 4px;
 }
 
@@ -319,12 +335,12 @@ html, body {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--gold);
-  text-shadow: 0 0 8px rgba(255, 211, 61, 0.5);
+  color: var(--vi-yellow);
+  text-shadow: 0 0 8px rgba(253, 224, 84, 0.5);
 }
 
 /* =====================================================
-   GAME INTERIOR  (#app and everything inside)
+   GAME INTERIOR (#app and everything inside)
    ===================================================== */
 
 #app {
@@ -332,11 +348,11 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: radial-gradient(ellipse at 50% 0%, #4a1361 0%, #0a021a 70%);
+  background: radial-gradient(ellipse at 50% 0%, #3a005e 0%, #060010 70%);
   overflow: hidden;
 }
 
-/* ===== GAME AREA (canvas + bet panel) ===== */
+/* ── GAME AREA (canvas + bet panel) ── */
 .game-area {
   flex: 1;
   display: flex;
@@ -344,7 +360,7 @@ html, body {
   min-height: 0;
 }
 
-/* ===== STAGE / CANVAS ===== */
+/* ── STAGE / CANVAS ── */
 .stage {
   position: relative;
   flex: 1;
@@ -358,7 +374,7 @@ html, body {
   max-width: 100%;
   max-height: 100%;
   display: block;
-  box-shadow: 0 0 60px rgba(255, 211, 61, 0.10);
+  box-shadow: 0 0 50px rgba(149, 0, 198, 0.12);
 }
 
 .wind-indicator {
@@ -385,29 +401,29 @@ html, body {
 .wind-arrow {
   font-size: 24px;
   font-weight: 700;
-  color: var(--cyan);
-  text-shadow: 0 0 12px var(--cyan);
+  color: var(--vi-cyan);
+  text-shadow: 0 0 12px var(--vi-cyan);
   line-height: 1;
 }
 
 .wind-value {
   font-size: 12px;
   font-weight: 700;
-  color: var(--cyan);
+  color: var(--vi-cyan);
   letter-spacing: 2px;
 }
 
-/* ===== RESULT BANNER ===== */
+/* ── RESULT BANNER ── */
 .result-banner {
   position: absolute;
   top: 38%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, var(--magenta), var(--gold));
+  background: linear-gradient(135deg, var(--vi-pink), var(--vi-yellow));
   padding: 28px 60px;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 0 80px rgba(255, 211, 61, 0.6);
+  box-shadow: 0 0 80px rgba(251, 0, 159, 0.55);
   animation: bannerPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 5;
 }
@@ -421,21 +437,24 @@ html, body {
   font-size: 52px;
   font-weight: 900;
   letter-spacing: 5px;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+  color: #000;
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.3);
 }
 
 .result-subtitle {
   font-size: 20px;
   margin-top: 6px;
   letter-spacing: 3px;
+  color: #000;
 }
 
-/* ===== BET PANEL (right sidebar of game) ===== */
+/* ── BET PANEL (right of game) ── */
 .bet-panel {
   width: 210px;
   flex-shrink: 0;
-  background: rgba(12, 6, 28, 0.96);
-  border-left: 1px solid var(--site-border);
+  background: rgba(4, 0, 10, 0.97);
+  border-left: 1px solid var(--line);
+  box-shadow: -1px 0 16px var(--line-glow);
   display: flex;
   flex-direction: column;
   padding: 18px 14px;
@@ -443,23 +462,15 @@ html, body {
   overflow-y: auto;
 }
 
-.bet-panel-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.bet-panel-section { display: flex; flex-direction: column; gap: 10px; }
 
-.bet-value-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
+.bet-value-row { display: flex; align-items: baseline; gap: 6px; }
 
 .bet-value {
   font-size: 34px;
   font-weight: 700;
-  color: var(--gold);
-  text-shadow: 0 0 12px rgba(255, 211, 61, 0.5);
+  color: var(--vi-yellow);
+  text-shadow: 0 0 14px rgba(253, 224, 84, 0.5);
   line-height: 1;
 }
 
@@ -476,9 +487,9 @@ html, body {
 }
 
 .btn-step {
-  background: rgba(255, 211, 61, 0.08);
-  color: var(--gold);
-  border: 1px solid rgba(255, 211, 61, 0.30);
+  background: rgba(253, 224, 84, 0.07);
+  color: var(--vi-yellow);
+  border: 1px solid rgba(253, 224, 84, 0.28);
   border-radius: 6px;
   padding: 7px 4px;
   font-weight: 700;
@@ -488,8 +499,8 @@ html, body {
   text-align: center;
 }
 
-.btn-step:hover { background: rgba(255, 211, 61, 0.20); }
-.btn-step:disabled { opacity: 0.28; cursor: not-allowed; }
+.btn-step:hover { background: rgba(253, 224, 84, 0.18); }
+.btn-step:disabled { opacity: 0.25; cursor: not-allowed; }
 
 .bet-quick { display: flex; gap: 4px; }
 
@@ -497,7 +508,7 @@ html, body {
   flex: 1;
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid rgba(160, 143, 192, 0.35);
+  border: 1px solid rgba(251, 244, 219, 0.20);
   border-radius: 4px;
   padding: 5px 2px;
   font-size: 10px;
@@ -506,12 +517,12 @@ html, body {
   transition: all 0.15s;
 }
 
-.btn-quick:hover { color: var(--cyan); border-color: var(--cyan); }
-.btn-quick:disabled { opacity: 0.28; cursor: not-allowed; }
+.btn-quick:hover { color: var(--vi-cyan); border-color: var(--vi-cyan); }
+.btn-quick:disabled { opacity: 0.25; cursor: not-allowed; }
 
 .bet-panel-divider {
   height: 1px;
-  background: var(--site-border);
+  background: rgba(149, 0, 198, 0.40);
 }
 
 .btn-start-round {
@@ -532,9 +543,9 @@ html, body {
 }
 
 .btn-auto-bet {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-muted);
-  border: 1px solid rgba(160, 143, 192, 0.35);
+  border: 1px solid rgba(251, 244, 219, 0.20);
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 10px;
@@ -545,19 +556,19 @@ html, body {
 }
 
 .btn-auto-bet[data-active="true"] {
-  background: rgba(0, 229, 255, 0.12);
-  color: var(--cyan);
-  border-color: var(--cyan);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+  background: rgba(42, 254, 255, 0.10);
+  color: var(--vi-cyan);
+  border-color: var(--vi-cyan);
+  box-shadow: 0 0 10px rgba(42, 254, 255, 0.25);
 }
 
 .auto-bet-countdown {
-  background: rgba(0, 229, 255, 0.07);
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  background: rgba(42, 254, 255, 0.06);
+  border: 1px solid rgba(42, 254, 255, 0.28);
   border-radius: 8px;
-  padding: 10px 10px;
+  padding: 10px;
   font-size: 11px;
-  color: var(--cyan);
+  color: var(--vi-cyan);
   letter-spacing: 1px;
   display: flex;
   flex-direction: column;
@@ -568,13 +579,13 @@ html, body {
 .auto-bet-countdown span {
   font-size: 20px;
   font-weight: 700;
-  text-shadow: 0 0 10px var(--cyan);
+  text-shadow: 0 0 10px var(--vi-cyan);
 }
 
 .btn-cancel-auto {
   background: transparent;
-  color: var(--magenta);
-  border: 1px solid var(--magenta);
+  color: var(--vi-pink);
+  border: 1px solid var(--vi-pink);
   border-radius: 4px;
   padding: 3px 8px;
   font-size: 9px;
@@ -583,12 +594,13 @@ html, body {
   transition: all 0.15s;
 }
 
-.btn-cancel-auto:hover { background: rgba(215, 43, 120, 0.15); }
+.btn-cancel-auto:hover { background: rgba(251, 0, 159, 0.14); }
 
-/* ===== CONTROL PANEL (footer) ===== */
+/* ── CONTROL PANEL (footer) ── */
 .control-panel {
-  background: rgba(10, 4, 24, 0.97);
-  border-top: 1px solid var(--site-border);
+  background: rgba(4, 0, 10, 0.98);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -1px 16px var(--line-glow);
   padding: 14px 22px;
   min-height: 100px;
   display: flex;
@@ -616,8 +628,8 @@ html, body {
 
 /* Primary button */
 .btn-primary {
-  background: linear-gradient(135deg, var(--purple), var(--magenta));
-  color: white;
+  background: linear-gradient(135deg, var(--vi-purple), var(--vi-pink));
+  color: var(--vi-cream);
   border: none;
   border-radius: 22px;
   padding: 14px 32px;
@@ -626,20 +638,20 @@ html, body {
   letter-spacing: 2px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 0 18px rgba(215, 43, 120, 0.35);
+  box-shadow: 0 0 20px rgba(251, 0, 159, 0.35);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 28px rgba(215, 43, 120, 0.55);
+  box-shadow: 0 0 32px rgba(251, 0, 159, 0.55);
 }
 
 .btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-primary:disabled { opacity: 0.32; cursor: not-allowed; transform: none; }
 
 /* Fire button */
 .btn-fire {
-  background: linear-gradient(135deg, #ff4400, var(--gold));
+  background: linear-gradient(135deg, var(--vi-red), var(--vi-orange));
   color: white;
   border: none;
   border-radius: 22px;
@@ -649,14 +661,14 @@ html, body {
   letter-spacing: 3px;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 0 28px rgba(255, 100, 0, 0.55);
+  box-shadow: 0 0 28px rgba(248, 5, 14, 0.50);
   animation: firePulse 1.2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes firePulse {
-  0%, 100% { box-shadow: 0 0 28px rgba(255, 100, 0, 0.45); }
-  50%       { box-shadow: 0 0 48px rgba(255, 100, 0, 0.85); }
+  0%, 100% { box-shadow: 0 0 28px rgba(248, 5, 14, 0.45); }
+  50%       { box-shadow: 0 0 52px rgba(252, 107, 35, 0.85); }
 }
 
 .btn-fire:hover { transform: scale(1.04); }
@@ -674,7 +686,7 @@ html, body {
   height: 7px;
   appearance: none;
   -webkit-appearance: none;
-  background: linear-gradient(90deg, var(--purple), var(--magenta));
+  background: linear-gradient(90deg, var(--vi-purple), var(--vi-pink));
   border-radius: 4px;
   cursor: pointer;
   outline: none;
@@ -685,25 +697,25 @@ html, body {
   -webkit-appearance: none;
   width: 22px;
   height: 22px;
-  background: var(--gold);
+  background: var(--vi-yellow);
   border: 2px solid #fff;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 10px var(--gold);
+  box-shadow: 0 0 10px rgba(253, 224, 84, 0.7);
 }
 
 #angle-slider::-moz-range-thumb {
   width: 22px;
   height: 22px;
-  background: var(--gold);
+  background: var(--vi-yellow);
   border: 2px solid #fff;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 10px var(--gold);
+  box-shadow: 0 0 10px rgba(253, 224, 84, 0.7);
 }
 
 .angle-value {
-  color: var(--gold);
+  color: var(--vi-yellow);
   font-size: 20px;
   font-weight: 700;
   min-width: 52px;
@@ -712,15 +724,14 @@ html, body {
 
 /* Power meter */
 .power-control { flex: 1; }
-
 .power-meter { margin-top: 6px; }
 
 .power-meter-track {
   position: relative;
   height: 36px;
-  background: linear-gradient(90deg, #1a4488 0%, #00e5ff 30%, #ffd33d 60%, #ff4400 100%);
+  background: linear-gradient(90deg, var(--vi-blue) 0%, var(--vi-cyan) 30%, var(--vi-yellow) 62%, var(--vi-orange) 80%, var(--vi-red) 100%);
   border-radius: 6px;
-  border: 1px solid var(--panel-border);
+  border: 1px solid rgba(149, 0, 198, 0.35);
   overflow: hidden;
 }
 
@@ -755,7 +766,7 @@ html, body {
   text-align: center;
   font-size: 16px;
   letter-spacing: 4px;
-  color: var(--cyan);
+  color: var(--vi-cyan);
   animation: blink 1s ease-in-out infinite;
 }
 
@@ -785,11 +796,11 @@ html, body {
 }
 
 .result-payout.win {
-  color: var(--gold);
-  text-shadow: 0 0 22px var(--gold);
+  color: var(--vi-yellow);
+  text-shadow: 0 0 22px rgba(253, 224, 84, 0.7);
 }
 
-.result-payout.loss { color: var(--magenta); }
+.result-payout.loss { color: var(--vi-pink); }
 
 /* =====================================================
    RESPONSIVE
@@ -801,7 +812,7 @@ html, body {
   .vi-logo { justify-content: center; padding: 14px 0; }
   .vi-nav-name, .vi-nav-badge { display: none; }
   .vi-nav-item { justify-content: center; padding: 12px 0; border-left: none; border-bottom: 3px solid transparent; }
-  .vi-nav-active { border-bottom-color: var(--magenta); }
+  .vi-nav-active { border-bottom-color: var(--vi-pink); }
   .vi-nav-section-label { display: none; }
   .vi-search { display: none; }
   .bet-panel { width: 170px; padding: 12px 10px; }
