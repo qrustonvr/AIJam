@@ -8,123 +8,195 @@
   <link rel="stylesheet" href="styles/main.css" />
 </head>
 <body>
-  <div id="app">
-    <header class="top-hud">
-      <div class="brand">
-        <span class="brand-mark">&#9893;</span>
-        <span class="brand-name">VEGAS <span class="accent">INFINITE</span></span>
-        <span class="game-title">CANNON QUACK</span>
+  <div class="vi-site">
+
+    <!-- ===== LEFT SIDEBAR ===== -->
+    <aside class="vi-sidebar">
+      <div class="vi-logo">
+        <div class="vi-logo-mark">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <path d="M18 3L33 12V24L18 33L3 24V12L18 3Z" fill="url(#logoGrad)" opacity="0.9"/>
+            <path d="M10 18C10 18 13 13 18 13C23 13 26 18 26 18C26 18 23 23 18 23C13 23 10 18 10 18Z" fill="none" stroke="#ffd33d" stroke-width="1.5"/>
+            <circle cx="18" cy="18" r="3" fill="#ffd33d"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="3" y1="3" x2="33" y2="33">
+                <stop offset="0%" stop-color="#d72b78"/>
+                <stop offset="100%" stop-color="#6f2bb0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="vi-logo-text">
+          <span class="vi-logo-vegas">VEGAS</span>
+          <span class="vi-logo-infinite">INFINITE</span>
+        </div>
       </div>
-      <div class="balance-display">
-        <span class="label">BALANCE</span>
-        <span id="balance-value" class="value">1,000</span>
-        <span class="chip">CHIPS</span>
+
+      <div class="vi-sidebar-scroll">
+        <nav class="vi-nav">
+          <div class="vi-nav-section-label">GAMES</div>
+
+          <a class="vi-nav-item vi-nav-active" href="#">
+            <span class="vi-nav-icon">&#127919;</span>
+            <span class="vi-nav-name">Cannon Quack</span>
+            <span class="vi-nav-badge">NEW</span>
+          </a>
+        </nav>
       </div>
-    </header>
+    </aside>
 
-    <div class="game-area">
-      <main class="stage">
-        <canvas id="game-canvas" width="1280" height="720"></canvas>
+    <!-- ===== MAIN COLUMN ===== -->
+    <div class="vi-main">
 
-        <div class="wind-indicator" id="wind-indicator">
-          <span class="label">WIND</span>
-          <div class="wind-arrow" id="wind-arrow">&rarr;</div>
-          <span class="wind-value" id="wind-value">0</span>
+      <!-- Top bar -->
+      <header class="vi-topbar">
+        <div class="vi-search">
+          <svg class="vi-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="#7a6a9a" stroke-width="1.5"/>
+            <path d="M11 11L14 14" stroke="#7a6a9a" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="vi-search-placeholder">Search games...</span>
         </div>
 
-        <div class="result-banner" id="result-banner" hidden>
-          <div class="result-title" id="result-title">BIG WIN!</div>
-          <div class="result-subtitle" id="result-subtitle">+500 CHIPS</div>
-        </div>
-      </main>
-
-      <!-- RIGHT SIDE BET PANEL — always visible -->
-      <aside class="bet-panel">
-        <div class="bet-panel-section">
-          <span class="control-label">YOUR BET</span>
-          <div class="bet-value-row">
-            <span id="bet-value" class="bet-value">50</span>
-            <span class="bet-chip-label">CHIPS</span>
+        <div class="vi-topbar-right">
+          <div class="balance-display">
+            <span class="label">BALANCE</span>
+            <span id="balance-value" class="value">1,000</span>
+            <span class="chip">CHIPS</span>
           </div>
-          <div class="bet-buttons">
-            <button class="btn-step" data-bet-delta="-50">&minus;50</button>
-            <button class="btn-step" data-bet-delta="-10">&minus;10</button>
-            <button class="btn-step" data-bet-delta="10">+10</button>
-            <button class="btn-step" data-bet-delta="50">+50</button>
-          </div>
-          <div class="bet-quick">
-            <button class="btn-quick" data-bet-set="10">MIN</button>
-            <button class="btn-quick" data-bet-set="100">100</button>
-            <button class="btn-quick" data-bet-set="500">MAX</button>
+          <button class="vi-btn-login">LOGIN</button>
+          <button class="vi-btn-create">CREATE ACCOUNT</button>
+          <div class="vi-avatar">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="6" r="3.5" fill="#a08fc0"/>
+              <path d="M2 16c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#a08fc0" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </div>
         </div>
+      </header>
 
-        <div class="bet-panel-divider"></div>
-
-        <button class="btn-primary btn-start-round" id="btn-lock-bet">START ROUND &rarr;</button>
-
-        <div class="bet-panel-divider"></div>
-
-        <div class="auto-bet-section">
-          <div class="auto-bet-row">
-            <span class="control-label" style="margin:0">AUTO BET</span>
-            <button class="btn-auto-bet" id="btn-auto-bet" data-active="false">OFF</button>
-          </div>
-          <div id="auto-bet-countdown" class="auto-bet-countdown" hidden>
-            Next round in <span id="auto-bet-timer">5</span>s
-            <button class="btn-cancel-auto" id="btn-cancel-auto">CANCEL</button>
-          </div>
-        </div>
-      </aside>
-    </div>
-
-    <footer class="control-panel">
-      <!-- IDLE / BETTING hint -->
-      <section class="control-section" id="phase-betting">
-        <div class="watching">
-          <span class="watching-label">&#8592; SET YOUR BET AND START THE ROUND</span>
-        </div>
-      </section>
-
-      <!-- POWER + ANGLE PHASE (combined) -->
-      <section class="control-section" id="phase-power" hidden>
-        <div class="aim-control">
-          <span class="control-label">ANGLE</span>
-          <input type="range" id="angle-slider" min="10" max="80" value="45" step="1" />
-          <span id="angle-value" class="angle-value">45&deg;</span>
-        </div>
-        <div class="power-control">
-          <span class="control-label">POWER &mdash; TAP FIRE TO LOCK (or SPACE)</span>
-          <div class="power-meter">
-            <div class="power-meter-track">
-              <div class="power-meter-needle" id="power-needle"></div>
-              <div class="power-meter-zones">
-                <span>LOW</span>
-                <span>MID</span>
-                <span>HIGH</span>
-              </div>
+      <!-- Game embed area -->
+      <div class="vi-content">
+        <div class="vi-game-embed">
+          <!-- Title bar above game -->
+          <div class="vi-game-titlebar">
+            <div class="vi-game-titlebar-left">
+              <span class="vi-game-duck">&#128060;</span>
+              <span class="vi-game-name">CANNON QUACK</span>
+              <span class="vi-game-provider">VEGAS INFINITE</span>
+            </div>
+            <div class="vi-game-titlebar-right">
+              <span class="vi-original-badge">&#11088; ORIGINAL</span>
             </div>
           </div>
-        </div>
-        <button class="btn-fire" id="btn-fire">FIRE!</button>
-      </section>
 
-      <!-- WATCH PHASE -->
-      <section class="control-section" id="phase-firing" hidden>
-        <div class="watching">
-          <span class="watching-label">&darr; TRACKING DUCKY &darr;</span>
-        </div>
-      </section>
+          <!-- The game itself -->
+          <div id="app">
+            <div class="game-area">
+              <main class="stage">
+                <canvas id="game-canvas" width="1280" height="720"></canvas>
 
-      <!-- RESULT PHASE -->
-      <section class="control-section" id="phase-result" hidden>
-        <div class="result-summary">
-          <span id="result-zone" class="result-zone">Landed: 4x VALLEY</span>
-          <span id="result-payout" class="result-payout">+200</span>
+                <div class="wind-indicator" id="wind-indicator">
+                  <span class="label">WIND</span>
+                  <div class="wind-arrow" id="wind-arrow">&rarr;</div>
+                  <span class="wind-value" id="wind-value">0</span>
+                </div>
+
+                <div class="result-banner" id="result-banner" hidden>
+                  <div class="result-title" id="result-title">BIG WIN!</div>
+                  <div class="result-subtitle" id="result-subtitle">+500 CHIPS</div>
+                </div>
+              </main>
+
+              <!-- RIGHT SIDE BET PANEL -->
+              <aside class="bet-panel">
+                <div class="bet-panel-section">
+                  <span class="control-label">YOUR BET</span>
+                  <div class="bet-value-row">
+                    <span id="bet-value" class="bet-value">50</span>
+                    <span class="bet-chip-label">CHIPS</span>
+                  </div>
+                  <div class="bet-buttons">
+                    <button class="btn-step" data-bet-delta="-50">&minus;50</button>
+                    <button class="btn-step" data-bet-delta="-10">&minus;10</button>
+                    <button class="btn-step" data-bet-delta="10">+10</button>
+                    <button class="btn-step" data-bet-delta="50">+50</button>
+                  </div>
+                  <div class="bet-quick">
+                    <button class="btn-quick" data-bet-set="10">MIN</button>
+                    <button class="btn-quick" data-bet-set="100">100</button>
+                    <button class="btn-quick" data-bet-set="500">MAX</button>
+                  </div>
+                </div>
+
+                <div class="bet-panel-divider"></div>
+
+                <button class="btn-primary btn-start-round" id="btn-lock-bet">START ROUND &rarr;</button>
+
+                <div class="bet-panel-divider"></div>
+
+                <div class="auto-bet-section">
+                  <div class="auto-bet-row">
+                    <span class="control-label" style="margin:0">AUTO BET</span>
+                    <button class="btn-auto-bet" id="btn-auto-bet" data-active="false">OFF</button>
+                  </div>
+                  <div id="auto-bet-countdown" class="auto-bet-countdown" hidden>
+                    Next round in <span id="auto-bet-timer">5</span>s
+                    <button class="btn-cancel-auto" id="btn-cancel-auto">CANCEL</button>
+                  </div>
+                </div>
+              </aside>
+            </div>
+
+            <footer class="control-panel">
+              <section class="control-section" id="phase-betting">
+                <div class="watching">
+                  <span class="watching-label">&#8592; SET YOUR BET AND START THE ROUND</span>
+                </div>
+              </section>
+
+              <section class="control-section" id="phase-power" hidden>
+                <div class="aim-control">
+                  <span class="control-label">ANGLE</span>
+                  <input type="range" id="angle-slider" min="10" max="80" value="45" step="1" />
+                  <span id="angle-value" class="angle-value">45&deg;</span>
+                </div>
+                <div class="power-control">
+                  <span class="control-label">POWER &mdash; TAP FIRE TO LOCK (or SPACE)</span>
+                  <div class="power-meter">
+                    <div class="power-meter-track">
+                      <div class="power-meter-needle" id="power-needle"></div>
+                      <div class="power-meter-zones">
+                        <span>LOW</span>
+                        <span>MID</span>
+                        <span>HIGH</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn-fire" id="btn-fire">FIRE!</button>
+              </section>
+
+              <section class="control-section" id="phase-firing" hidden>
+                <div class="watching">
+                  <span class="watching-label">&darr; TRACKING DUCKY &darr;</span>
+                </div>
+              </section>
+
+              <section class="control-section" id="phase-result" hidden>
+                <div class="result-summary">
+                  <span id="result-zone" class="result-zone">Landed: 4x VALLEY</span>
+                  <span id="result-payout" class="result-payout">+200</span>
+                </div>
+                <button class="btn-primary" id="btn-play-again">PLAY AGAIN &rarr;</button>
+              </section>
+            </footer>
+          </div>
+          <!-- end #app -->
         </div>
-        <button class="btn-primary" id="btn-play-again">PLAY AGAIN &rarr;</button>
-      </section>
-    </footer>
+      </div>
+    </div>
+    <!-- end .vi-main -->
   </div>
 
   <script type="module" src="scripts/main.js"></script>
